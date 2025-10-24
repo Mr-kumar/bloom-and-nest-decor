@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Heart, Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingCart, X, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -19,8 +21,14 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Logged out successfully");
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -78,6 +86,35 @@ const Header = () => {
             </Button>
           </Link>
 
+          {/* Auth Buttons */}
+          {user ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin" className="hidden sm:block">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden lg:inline">Admin</span>
+                  </Button>
+                </Link>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout} 
+                className="gap-2 hidden sm:flex"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden lg:inline">Logout</span>
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth" className="hidden sm:block">
+              <Button variant="default" size="sm">
+                Login
+              </Button>
+            </Link>
+          )}
+
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
@@ -103,6 +140,39 @@ const Header = () => {
                     </Button>
                   </Link>
                 ))}
+                
+                {/* Mobile Auth Section */}
+                <div className="border-t pt-4 space-y-2">
+                  {user ? (
+                    <>
+                      {isAdmin && (
+                        <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                          <Button variant="outline" className="w-full justify-start gap-2">
+                            <User className="h-4 w-4" />
+                            Admin Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2"
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </SheetContent>
           </Sheet>
