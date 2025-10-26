@@ -158,7 +158,7 @@ const Checkout = () => {
           notes,
           status: "pending",
           payment_status: "pending",
-        })
+        } as any)
         .select()
         .single();
 

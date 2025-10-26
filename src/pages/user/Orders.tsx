@@ -22,6 +22,7 @@ interface Order {
   total_amount: number;
   created_at: string;
   order_items: any[];
+  shipping_address: any;
 }
 
 const Orders = () => {

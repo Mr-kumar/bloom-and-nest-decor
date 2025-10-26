@@ -75,7 +75,7 @@ const AdminUsers = () => {
 
       // Combine data
       const usersWithRoles = profiles.map((profile) => {
-        const authUser = authUsers?.find((u) => u.id === profile.id);
+        const authUser = authUsers?.find((u: any) => u.id === profile.id);
         const userRole = roles?.find((r) => r.user_id === profile.id && r.role === "admin");
 
         return {

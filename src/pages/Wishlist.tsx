@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heart, ShoppingCart, Trash2, Sparkles } from "lucide-react";
@@ -9,24 +9,10 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface WishlistItem {
-  id: string;
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    image_url: string;
-    category: string;
-    customizable: boolean;
-    in_stock: boolean;
-  };
-}
-
 const Wishlist = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +25,7 @@ const Wishlist = () => {
 
   const loadWishlist = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from("wishlist")
@@ -70,39 +56,38 @@ const Wishlist = () => {
 
   const removeFromWishlist = async (wishlistId: string) => {
     try {
-      const { error } = await supabase
-        .from("wishlist")
-        .delete()
-        .eq("id", wishlistId);
+      const { error } = await supabase.from("wishlist").delete().eq("id", wishlistId);
 
       if (error) throw error;
       toast.success("Removed from wishlist");
       loadWishlist();
-    } catch (error) {
-      console.error("Error removing from wishlist:", error);
-      toast.error("Failed to remove from wishlist");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove from wishlist");
     }
   };
 
   const addToCart = async (productId: string) => {
-    if (!user) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from("cart")
-        .upsert({
+      const { error } = await supabase.from("cart").upsert(
+        {
           user_id: user.id,
           product_id: productId,
           quantity: 1,
-        }, {
+        },
+        {
           onConflict: "user_id,product_id",
-        });
+        }
+      );
 
       if (error) throw error;
       toast.success("Added to cart");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add to cart");
     }
   };
 
@@ -174,8 +159,8 @@ const Wishlist = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => removeFromWishlist(item.id)}
                         className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm hover:bg-background/90 text-destructive"
+                        onClick={() => removeFromWishlist(item.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -196,12 +181,14 @@ const Wishlist = () => {
                           {item.product.category}
                         </p>
                         <h3 className="font-semibold text-lg mt-1">{item.product.name}</h3>
+                        {item.product.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                            {item.product.description}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {item.product.description}
-                      </p>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold">₹{item.product.price}</span>
+                        <span className="text-2xl font-bold">₹{item.product.price.toFixed(2)}</span>
                       </div>
                       <div className="flex gap-2 pt-2">
                         <Button 
@@ -214,9 +201,9 @@ const Wishlist = () => {
                           <ShoppingCart className="w-4 h-4" />
                           Add to Cart
                         </Button>
-                        <Link to={`/shop`} className="flex-1">
+                        <Link to={`/product/${item.product.id}`} className="flex-1">
                           <Button variant="outline" className="w-full" size="sm">
-                            Continue Shopping
+                            View Details
                           </Button>
                         </Link>
                       </div>
