@@ -17,8 +17,10 @@ const AdminSidebar = () => {
 
   const navItems = [
     { to: "/admin", icon: LayoutDashboard, label: "Overview" },
-    { to: "/admin/news", icon: Newspaper, label: "News Management" },
+    { to: "/admin/orders", icon: Package, label: "Orders" },
     { to: "/admin/products", icon: Package, label: "Products" },
+    { to: "/admin/users", icon: Settings, label: "Users" },
+    { to: "/admin/news", icon: Newspaper, label: "News" },
     { to: "/admin/settings", icon: Settings, label: "Settings" },
   ];
 
